@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contábil Tasks — SLT Consult</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
+:root{
+  --blue:#1a6ef8;--blue2:#2d7ff9;--dark:#111213;--gray:#8b9099;
+  --red:#e53935;--grn:#1db954;--sw:272px;--th:60px;--r:10px;--sh:0 2px 12px rgba(0,0,0,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;font-size:14px;background:#f5f6f8;color:#111;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-thumb{background:#ccc;border-radius:99px;}
+
+/* LOGIN */
+#ls{position:fixed;inset:0;z-index:9999;background:#0a0a0a;display:flex;align-items:center;justify-content:center;}
+.lw{width:100%;max-width:420px;padding:0 24px;}
+.ll{text-align:center;margin-bottom:32px;}.ll img{width:130px;}
+.lc{background:#151617;border:1px solid #2e3033;border-radius:16px;padding:36px;}
+.lc h2{color:#f8f9fa;font-size:20px;font-weight:700;margin-bottom:4px;}.lc>p{color:#8b9099;font-size:13px;margin-bottom:24px;}
+.lf{margin-bottom:14px;}.lf label{display:block;color:#c1c7cf;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;margin-bottom:7px;}
+.lf input{width:100%;background:#1e2022;border:1px solid #3a3d40;border-radius:8px;padding:11px 14px;color:#f8f9fa;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;caret-color:#f8f9fa;}
+.lf input:focus{border-color:#1a6ef8;}
+.lbtn{width:100%;background:#1a6ef8;color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:4px;transition:background .2s;}.lbtn:hover{background:#2d7ff9;}
+#lerr{color:#ff5252;font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
+#lp{color:#f8f9fa !important;letter-spacing:2px;font-size:16px;}
+.lco{position:fixed;bottom:24px;right:28px;}.lco-t{color:#fff;font-size:22px;font-weight:800;letter-spacing:-1px;line-height:1;}.lco-s{color:#444;font-size:11px;letter-spacing:2px;}
+
+
+/* SIDEBAR */
+.sb{width:var(--sw);background:#111213;position:fixed;top:0;left:0;bottom:0;z-index:200;display:flex;flex-direction:column;transition:transform .3s;}
+.sb.hidden{transform:translateX(-100vw);}
+.sb-logo{padding:16px;border-bottom:1px solid #2e3033;display:flex;justify-content:center;}
+.sb-logo img{width:88px;}
+.sb-nav{flex:1;padding:8px 0;overflow-y:auto;}
+.ns{padding:10px 16px 4px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#3a3d40;}
+.ni{display:flex;align-items:center;gap:11px;padding:10px 16px;cursor:pointer;color:#8b9099;font-size:13.5px;font-weight:500;transition:all .2s;border-left:2px solid transparent;}
+.ni:hover{background:rgba(255,255,255,.04);color:#c1c7cf;}.ni.active{background:rgba(26,110,248,.12);color:#2d7ff9;border-left-color:#1a6ef8;}
+.ni svg{opacity:.7;flex-shrink:0;}.ni.active svg{opacity:1;}
+.sb-month{padding:12px 16px;border-top:1px solid #2e3033;}
+.sb-month label{display:block;color:#8b9099;font-size:10px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px;}
+.sb-month select{width:100%;background:#1e2022;border:1px solid #3a3d40;border-radius:8px;padding:9px 12px;color:#f8f9fa;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;}
+.sb-bot{padding:12px 16px;border-top:1px solid #2e3033;font-size:10px;color:#3a3d40;text-align:center;line-height:1.5;}
+
+/* TOPBAR */
+.tb{height:var(--th);background:#fff;border-bottom:1px solid #e8eaed;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:fixed;top:0;left:var(--sw);right:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:left .3s;}
+.tb.full{left:0;}
+.tbl{display:flex;align-items:center;gap:10px;}.tbt{font-size:15px;font-weight:600;color:#111;}
+.tbr{display:flex;align-items:center;gap:12px;}
+.uc{display:flex;align-items:center;gap:9px;background:#f5f6f8;border-radius:8px;padding:5px 11px 5px 5px;}
+.ua{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;}
+.ua.r-admin{background:#7c3aed;}.ua.r-gestor{background:#0d4bb5;}.ua.r-colaborador{background:#1db954;}
+.un{font-size:13px;font-weight:500;line-height:1.2;}
+.unr{font-size:10px;color:#8b9099;}
+.lob{display:flex;align-items:center;gap:5px;background:none;border:1px solid #e0e0e0;border-radius:7px;padding:6px 11px;cursor:pointer;color:#8b9099;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .2s;}.lob:hover{border-color:#e53935;color:#e53935;}
+.mb{background:none;border:none;cursor:pointer;padding:6px;border-radius:7px;color:#8b9099;display:flex;align-items:center;transition:background .15s;}.mb:hover{background:#f5f6f8;}
+
+/* MAIN */
+.mn{margin-left:var(--sw);margin-top:var(--th);padding:24px;min-height:calc(100vh - var(--th));background:#f5f6f8;transition:margin-left .3s;}.mn.full{margin-left:0;}
+#app{display:none;}#app.visible{display:block;}
+.pg{display:none;opacity:0;}.pg.active{display:block;animation:fi .2s ease forwards;}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTION HEADER */
+.sh2{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.st{font-size:15px;font-weight:700;color:#111;}.ssub{font-size:12px;color:#8b9099;margin-top:2px;}
+
+/* KPI CARDS */
+.cr{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px;}
+.card{background:#fff;border-radius:var(--r);padding:20px;border:1px solid #e8eaed;box-shadow:var(--sh);}
+.ci{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.ci-r{background:#fee2e2;}.ci-g{background:#d1fae5;}.ci-b{background:#dbeafe;}.ci-p{background:#ede9fe;}
+.cl{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#8b9099;margin-bottom:5px;}
+.cv{font-size:22px;font-weight:700;color:#111;letter-spacing:-.4px;}
+
+/* FILTERS */
+.fb{background:#fff;border-radius:12px;border:1px solid #e8eaed;margin-bottom:18px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.fb h3{font-size:11px;font-weight:700;color:#8b9099;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.fg{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));align-items:end;}
+.ff{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:10.5px;font-weight:700;color:#1a6ef8;text-transform:uppercase;letter-spacing:.5px;}
+input[type="text"],input[list],select.fs{width:100%;background:#f5f6f8;border:1px solid #e0e3e8;border-radius:8px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;color:#111;}
+input:focus,select.fs:focus{border-color:#1a6ef8;background:#fff;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;border:none;}
+.bp{background:#1a6ef8;color:#fff;}.bp:hover{background:#2d7ff9;}
+.bs{background:#fff;color:#111;border:1px solid #d8dae0;}.bs:hover{background:#f5f6f8;}
+.br{background:#fdecea;color:#e53935;border:1px solid #f8c5c2;}.br:hover{background:#ffebee;}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px;}
+
+/* TASKS LAYOUT */
+.tasks-layout{display:grid;gap:14px;grid-template-columns:280px 1fr;}
+.companies-panel{max-height:calc(100vh - 290px);overflow-y:auto;}
+.companies-list{margin:0;padding:0;list-style:none;}
+.companies-list li{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:6px;border:1px solid transparent;transition:all .2s;}
+.companies-list li:hover{background:#eff6ff;}
+.companies-list li.active{background:#dbeafe;border-color:#93c5fd;}
+.co-name{font-weight:600;font-size:13px;color:#111;}
+.co-sub{font-size:11px;color:#8b9099;margin-top:2px;}
+
+/* TABLE */
+.table-wrap{overflow:auto;margin-top:10px;}
+table{width:100%;border-collapse:collapse;}
+th{background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:2px solid #e8eaed;white-space:nowrap;}
+td{padding:10px 14px;border-bottom:1px solid #f5f5f5;color:#2c2f33;font-size:13px;vertical-align:middle;}
+tbody tr:hover{background:#fafbff;}
+
+/* STATUS PILLS (3 states) */
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 11px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+.pill::before{content:'';width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.pill-pendente{background:#fee2e2;color:#991b1b;}.pill-pendente::before{background:#e53935;}
+.pill-colaborador{background:#d1fae5;color:#065f46;}.pill-colaborador::before{background:#1db954;}
+.pill-gestor{background:#dbeafe;color:#1e40af;}.pill-gestor::before{background:#1a6ef8;}
+.pill-sm{background:#fef3c7;color:#92400e;}.pill-sm::before{background:#f59e0b;}
+.pill-parcial{background:#ede9fe;color:#5b21b6;}.pill-parcial::before{background:#7c3aed;}
+
+/* CHARTS */
+.charts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.chart-card canvas{max-height:280px;}
+.chart-card{min-height:340px;display:flex;flex-direction:column;}
+.chart-card canvas{flex:1 !important;}
+.chart-title{font-size:13px;font-weight:700;margin-bottom:14px;color:#111;}
+
+/* LEGEND */
+.legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:8px 0 14px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#555;}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+/* IMPORT */
+.import-card{display:grid;gap:12px;}
+#importLog{white-space:pre-wrap;font-size:.85rem;color:#1f2937;background:#f3f4f6;border-radius:10px;padding:12px;min-height:60px;}
+.import-info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;font-size:13px;color:#1e40af;line-height:1.7;}
+
+/* USERS PAGE */
+.user-grid{display:grid;gap:10px;}
+.user-card{background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:var(--sh);}
+.user-card-left{display:flex;align-items:center;gap:12px;}
+.user-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+.user-av.r-admin{background:#7c3aed;}.user-av.r-gestor{background:#0d4bb5;}.user-av.r-colaborador{background:#1db954;}
+.user-name{font-weight:600;font-size:13px;color:#111;}.user-meta{font-size:11px;color:#8b9099;margin-top:2px;}
+.role-badge{display:inline-flex;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;}
+.rb-admin{background:#ede9fe;color:#7c3aed;}.rb-gestor{background:#dbeafe;color:#0d4bb5;}.rb-colaborador{background:#d1fae5;color:#065f46;}
+
+/* MODAL */
+#mo{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:5000;display:none;align-items:center;justify-content:center;transition:background .25s;}
+#mo.on{background:rgba(7,46,122,.5);display:flex;}
+.mo-box{background:#fff;border-radius:14px;width:100%;max-width:430px;box-shadow:0 24px 64px rgba(0,0,0,.2);animation:fi .2s ease;}
+.mo-head{padding:18px 20px;border-bottom:1px solid #e8eaed;display:flex;align-items:center;justify-content:space-between;}
+.mo-head h3{font-size:15px;font-weight:700;color:#111;}
+.mo-body{padding:20px;}.mo-foot{padding:14px 20px;border-top:1px solid #e8eaed;display:flex;gap:8px;justify-content:flex-end;}
+.mo-x{background:none;border:none;cursor:pointer;font-size:20px;color:#8b9099;line-height:1;padding:0;}
+.mf{margin-bottom:14px;}.mf label{display:block;font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.mf input,.mf select{width:100%;border:1px solid #e0e3e8;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#f8f9fa;transition:border .2s;}
+.mf input:focus,.mf select:focus{border-color:#1a6ef8;background:#fff;}
+
+
+/* ── MULTI-SELECT DROPDOWN ── */
+.ms-wrap{position:relative;display:inline-block;width:100%;}
+.ms-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;background:#f5f6f8;border:1px solid #e0e3e8;border-radius:8px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:#111;cursor:pointer;transition:border .2s;text-align:left;}
+.ms-btn:hover,.ms-btn.open{border-color:#1a6ef8;background:#fff;}
+.ms-btn svg{flex-shrink:0;color:#bbb;transition:transform .2s;}
+.ms-btn.open svg{transform:rotate(180deg);}
+.ms-drop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid #e8eaed;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:700;display:none;overflow:hidden;}
+.ms-drop.open{display:block;}
+.ms-search{padding:8px 10px;border-bottom:1px solid #f0f0f0;}
+.ms-search input{width:100%;border:1px solid #e0e3e8;border-radius:6px;padding:6px 9px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;background:#f8f9fa;}
+.ms-search input:focus{border-color:#1a6ef8;background:#fff;}
+.ms-actions{display:flex;gap:5px;padding:6px 10px;border-bottom:1px solid #f0f0f0;}
+.ms-act{background:#f5f6f8;border:none;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:600;color:#555;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.ms-act:hover{background:#e8f0fe;color:#1a6ef8;}
+.ms-list{max-height:220px;overflow-y:auto;}
+.ms-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;transition:background .1s;}
+.ms-item:hover{background:#f5f6f8;}
+.ms-item input[type=checkbox]{width:14px;height:14px;accent-color:#1a6ef8;cursor:pointer;flex-shrink:0;}
+.ms-item-label{font-size:12.5px;color:#111;flex:1;}
+.ms-empty{padding:14px;text-align:center;font-size:12px;color:#8b9099;}
+
+/* INLINE EDIT */
+.inline-edit{display:flex;gap:8px;align-items:center;}.inline-edit input{min-width:180px;}
+.collab-list{display:flex;flex-direction:column;gap:8px;}
+/* COLLAB CARDS */
+.collab-card{background:#fff;border:1px solid #e8eaed;border-radius:14px;padding:20px;cursor:pointer;transition:all .22s;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.collab-card:hover{border-color:#93c5fd;box-shadow:0 4px 20px rgba(26,110,248,.12);transform:translateY(-2px);}
+.collab-card.active{border-color:#1a6ef8;background:#f0f6ff;box-shadow:0 4px 20px rgba(26,110,248,.18);}
+.collab-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;margin-bottom:12px;}
+.collab-card-name{font-size:14px;font-weight:700;color:#111;margin-bottom:4px;}
+.collab-card-meta{font-size:12px;color:#8b9099;margin-bottom:14px;}
+.collab-card-bar{height:6px;border-radius:99px;background:#f0f0f0;overflow:hidden;display:flex;margin-bottom:8px;}
+.collab-card-stats{display:flex;gap:10px;flex-wrap:wrap;}
+.collab-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:#555;}
+.collab-stat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+/* PROGRESS LEGEND */
+.prog-legend-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:#555;}
+.prog-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+/* MINI STATS */
+.mini-stat-cell{padding:14px 16px;border-right:1px solid #f0f0f0;text-align:center;}
+.mini-stat-cell:last-child{border-right:none;}
+.mini-stat-val{font-size:20px;font-weight:700;color:#111;line-height:1;}
+.mini-stat-lbl{font-size:10px;color:#8b9099;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0 14px;}
+.mini-card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px;}
+.mini-card .k{font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;}
+.mini-card .v{font-size:20px;font-weight:800;color:#111;margin-top:2px;}
+.progress-wrap{background:#eef2f7;border-radius:999px;height:14px;overflow:hidden;display:flex;}
+.progress-seg{height:100%;}
+.progress-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:#4b5563;}
+.monthly-highlight{border-left:4px solid #1a6ef8;padding-left:12px;}
+
+/* ROLE HINT */
+.role-hint{font-size:12px;color:#1e40af;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:8px 12px;margin-bottom:10px;border-left:3px solid #1a6ef8;display:none;}
+
+
+/* IMPORT PAGE */
+#dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #e0e3e8;border-radius:12px;padding:36px 20px;cursor:pointer;transition:all .2s;background:#fafbfc;text-align:center;gap:8px;}
+#dropzone:hover{border-color:#1a6ef8;background:#f0f6ff;}
+.dz-icon{width:48px;height:48px;background:#e8f0fe;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.dz-title{font-size:14px;font-weight:600;color:#111;margin:0;}
+.dz-sub{font-size:12px;color:#8b9099;margin:2px 0 0;}
+.dz-file-pill{font-size:12px;color:#1a6ef8;font-weight:500;background:#e8f0fe;padding:3px 12px;border-radius:99px;margin-top:4px;}
+.import-status{border-radius:10px;padding:14px 16px;}
+.import-status.loading{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;}
+.import-status.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+.import-status.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
+.task-pill{font-size:12px;color:#555;padding:4px 10px;background:#f5f6f8;border-radius:6px;border:1px solid #f0f0f0;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:#111;color:#fff;padding:11px 18px;border-radius:9px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}.toast.success{background:#1db954;}.toast.error{background:#e53935;}
+
+@media(max-width:900px){.tasks-layout{grid-template-columns:1fr;}.mn{margin-left:0;}.tb{left:0;}}
+  </style>
+</head>
+<body>
+
+
+<!-- LOGIN -->
+<div id="ls">
+  <div class="lw">
+    <div class="ll"><img src="data:image/webp;base64,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" alt="SLT Consult"></div>
+    <div class="lc">
+      <h2>Bem-vindo de volta</h2>
+      <p>Acesse o sistema de tarefas contábeis SLT</p>
+      <div class="lf"><label>Login</label><input type="text" id="lu" placeholder="Usuário" autocomplete="username"></div>
+      <div class="lf"><label>Senha</label><input type="password" id="lp" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="color:#ffffff !important;background:#1e2022 !important;-webkit-text-fill-color:#ffffff !important;"></div>
+      <div id="lerr"></div>
+      <button class="lbtn" onclick="doLogin()">Entrar</button></div>
+    </div>
+  </div>
+  <div class="lco"><div class="lco-t">SLT</div><div class="lco-s">CONSULT</div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sb" id="sidebar">
+    <div class="sb-logo"><img src="data:image/webp;base64,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" alt="SLT Consult"></div>
+    <nav class="sb-nav">
+      <div class="ns">Principal</div>
+      <div class="ni active" onclick="navigate('dashboard',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
+      </div>
+      <div class="ni" onclick="navigate('tarefas',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tarefas
+      </div>
+      <div class="ns">Configuração</div>
+      <div class="ni" onclick="navigate('importar',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>Importar Base
+      </div>
+      <div class="ni" id="nav-users" style="display:none" onclick="navigate('usuarios',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>Usuários
+      </div>
+    </nav>
+    <div class="sb-month">
+      <label>Mês de trabalho</label>
+      <select id="monthSelect"></select>
+    </div>
+    <div class="sb-bot">&copy; 2026 SLT Consult<br><span style="opacity:.5;">Todos os direitos reservados</span></div>
+  </div>
+
+  <div class="tb" id="topbar">
+    <div class="tbl">
+      <button class="mb" onclick="toggleSB()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="tbt" id="topbar-title">Dashboard</div>
+    </div>
+    <div class="tbr">
+      <div class="uc">
+        <div class="ua" id="user-av">A</div>
+        <div><div class="un" id="user-nm">Admin</div><div class="unr" id="user-role-label">Administrador</div></div>
+      </div>
+      <button class="lob" onclick="doLogout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair
+      </button>
+    </div>
+  </div>
+
+  <div class="mn" id="main">
+
+    <!-- DASHBOARD -->
+    <div class="pg active" id="page-dashboard">
+      <div class="sh2"><div><div class="st">Dashboard</div><div class="ssub">Visão geral das tarefas do mês selecionado</div></div></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#e53935"></div>Pendente</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1db954"></div>Concluído pelo Colaborador (aguardando revisão)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1a6ef8"></div>Aprovado pelo Gestor (finalizado oficialmente)</div>
+      </div>
+      <div class="fb">
+        <h3>Filtros</h3>
+        <div class="fg">
+          <div class="ff"><span class="fl">Grupo</span><div class="ms-wrap" id="ms-d-grupo"><button class="ms-btn" onclick="toggleMS('ms-d-grupo')"><span id="ms-d-grupo-lbl">Todos</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button><div class="ms-drop" id="ms-d-grupo-drop"><div class="ms-search"><input type="text" placeholder="Buscar grupo..." oninput="msSearch('ms-d-grupo',this.value)"></div><div class="ms-actions"><button class="ms-act" onclick="msAll('ms-d-grupo',true)">✓ Todas</button><button class="ms-act" onclick="msAll('ms-d-grupo',false)">✗ Nenhuma</button></div><div class="ms-list" id="ms-d-grupo-list"></div></div></div></div>
+          <div class="ff"><span class="fl">Empresa</span><div class="ms-wrap" id="ms-d-empresa"><button class="ms-btn" onclick="toggleMS('ms-d-empresa')"><span id="ms-d-empresa-lbl">Todas</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button><div class="ms-drop" id="ms-d-empresa-drop"><div class="ms-search"><input type="text" placeholder="Buscar empresa..." oninput="msSearch('ms-d-empresa',this.value)"></div><div class="ms-actions"><button class="ms-act" onclick="msAll('ms-d-empresa',true)">✓ Todas</button><button class="ms-act" onclick="msAll('ms-d-empresa',false)">✗ Nenhuma</button></div><div class="ms-list" id="ms-d-empresa-list"></div></div></div></div>
+          <div class="ff"><span class="fl">Responsável</span><div class="ms-wrap" id="ms-d-responsavel"><button class="ms-btn" onclick="toggleMS('ms-d-responsavel')"><span id="ms-d-responsavel-lbl">Todos</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button><div class="ms-drop" id="ms-d-responsavel-drop"><div class="ms-search"><input type="text" placeholder="Buscar responsável..." oninput="msSearch('ms-d-responsavel',this.value)"></div><div class="ms-actions"><button class="ms-act" onclick="msAll('ms-d-responsavel',true)">✓ Todos</button><button class="ms-act" onclick="msAll('ms-d-responsavel',false)">✗ Nenhum</button></div><div class="ms-list" id="ms-d-responsavel-list"></div></div></div></div>
+          <div class="ff"><span class="fl">Tarefa</span><div class="ms-wrap" id="ms-d-tarefa"><button class="ms-btn" onclick="toggleMS('ms-d-tarefa')"><span id="ms-d-tarefa-lbl">Todas</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button><div class="ms-drop" id="ms-d-tarefa-drop"><div class="ms-search"><input type="text" placeholder="Buscar tarefa..." oninput="msSearch('ms-d-tarefa',this.value)"></div><div class="ms-actions"><button class="ms-act" onclick="msAll('ms-d-tarefa',true)">✓ Todas</button><button class="ms-act" onclick="msAll('ms-d-tarefa',false)">✗ Nenhuma</button></div><div class="ms-list" id="ms-d-tarefa-list"></div></div></div></div>
+          <div class="ff" style="justify-content:flex-end"><button id="clearFilters" class="btn bp" style="margin-top:auto;font-size:11px;padding:4px 12px;" onclick="clearAllFilters()">Limpar</button></div>
+        </div>
+      </div>
+      <div class="cr">
+        <article class="card"><div class="ci ci-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a6ef8" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="cl">Total de Tarefas</div><div class="cv" id="kpiTotal">0</div></article>
+        <article class="card"><div class="ci ci-g"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1db954" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="cl">Concluídas (geral)</div><div class="cv" id="kpiDone">0</div></article>
+        <article class="card"><div class="ci ci-r"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="cl">Pendentes</div><div class="cv" id="kpiPending">0</div></article>
+        <article class="card"><div class="ci ci-p"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="cl">% Conclusão (Aprovados)</div><div class="cv" id="kpiRate">0%</div></article>
+        <article class="card monthly-highlight"><div class="cl">Sem Movimento (S/M)</div><div class="cv" id="kpiSm">0</div></article>
+        <article class="card monthly-highlight"><div class="cl">Parcial (somente Fechamento)</div><div class="cv" id="kpiParcial">0</div></article>
+      </div>
+      <div class="charts">
+        <div class="card chart-card"><p class="chart-title">Por Status</p><canvas id="statusChart"></canvas></div>
+        <div class="card chart-card"><p class="chart-title">Por Responsável</p><canvas id="ownerChart"></canvas></div>
+        <div class="card chart-card"><p class="chart-title">Tarefas Mensais em Destaque</p><canvas id="monthlyChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TAREFAS -->
+    <div class="pg" id="page-tarefas">
+      <div class="sh2">
+        <div><div class="st">Tarefas</div><div class="ssub">Acompanhe as tarefas por colaborador no mês selecionado</div></div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="fb" style="margin-bottom:16px;">
+        <h3>Filtros</h3>
+        <div class="fg">
+          <div class="ff"><span class="fl">Grupo</span><div class="ms-wrap" id="ms-t-grupo"><button class="ms-btn" onclick="toggleMS('ms-t-grupo')"><span id="ms-t-grupo-lbl">Todos</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button><div class="ms-drop" id="ms-t-grupo-drop"><div class="ms-search"><input type="text" placeholder="Buscar..." oninput="msSearch('ms-t-grupo',this.value)"></div><div class="ms-actions"><button class="ms-act" onclick="msAll('ms-t-grupo',true)">✓ Todos</button><button class="ms-act" onclick="msAll('ms-t-grupo',false)">✗ Nenhum</button></div><div class="ms-list" id="ms-t-grupo-list"></div></div></div></div>
+          <div class="ff"><span class="fl">Empresa</span><div class="ms-wrap" id="ms-t-empresa"><button class="ms-btn" onclick="toggleMS('ms-t-empresa')"><span id="ms-t-empresa-lbl">Todas</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button><div class="ms-drop" id="ms-t-empresa-drop"><div class="ms-search"><input type="text" placeholder="Buscar..." oninput="msSearch('ms-t-empresa',this.value)"></div><div class="ms-actions"><button class="ms-act" onclick="msAll('ms-t-empresa',true)">✓ Todas</button><button class="ms-act" onclick="msAll('ms-t-empresa',false)">✗ Nenhuma</button></div><div class="ms-list" id="ms-t-empresa-list"></div></div></div></div>
+          <div class="ff"><span class="fl">Regime</span><div class="ms-wrap" id="ms-t-regime"><button class="ms-btn" onclick="toggleMS('ms-t-regime')"><span id="ms-t-regime-lbl">Todos</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button><div class="ms-drop" id="ms-t-regime-drop"><div class="ms-search"><input type="text" placeholder="Buscar..." oninput="msSearch('ms-t-regime',this.value)"></div><div class="ms-actions"><button class="ms-act" onclick="msAll('ms-t-regime',true)">✓ Todos</button><button class="ms-act" onclick="msAll('ms-t-regime',false)">✗ Nenhum</button></div><div class="ms-list" id="ms-t-regime-list"></div></div></div></div>
+          <div class="ff" style="justify-content:flex-end"><button class="btn bp" style="margin-top:auto;font-size:11px;padding:4px 12px;" onclick="clearAllTaskFilters()">Limpar</button></div>
+        </div>
+      </div>
+
+      <!-- Cards de colaboradores -->
+      <div id="collaboratorCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:20px;"></div>
+
+      <!-- Painel de tarefas do colaborador selecionado -->
+      <div id="collabTaskPanel" style="display:none;">
+        <div class="card" style="padding:0;overflow:hidden;">
+          <!-- Header do painel -->
+          <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+              <div id="selectedCollabName" style="font-size:15px;font-weight:700;color:#111;"></div>
+              <div id="selectedCollabMes" style="font-size:12px;color:#8b9099;margin-top:2px;"></div>
+            </div>
+            <button onclick="closeCollabPanel()" style="display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid #e0e3e8;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#8b9099;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              ← Voltar
+            </button>
+          </div>
+
+          <!-- Barra de progresso segmentada -->
+          <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:12px;font-weight:600;color:#555;">Progresso geral</span>
+              <span id="colabProgressPct" style="font-size:12px;font-weight:700;color:#1a6ef8;">0%</span>
+            </div>
+            <div id="colabProgressBar" style="height:10px;border-radius:99px;background:#f0f0f0;overflow:hidden;display:flex;"></div>
+            <div id="colabProgressLegend" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;"></div>
+          </div>
+
+          <!-- Mini stats -->
+          <div id="colabMiniStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:0;border-bottom:1px solid #f0f0f0;"></div>
+
+          <!-- Tabela de tarefas -->
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:2px solid #e8eaed;">Empresa</th>
+                  <th style="background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:2px solid #e8eaed;">Tarefa</th>
+                  <th style="background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:2px solid #e8eaed;">Status</th>
+                  <th style="background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:2px solid #e8eaed;">Início</th>
+                  <th style="background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:2px solid #e8eaed;">Fim</th>
+                  <th style="background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:2px solid #e8eaed;">Ação</th>
+                  <th style="background:#f8f9fa;color:#8b9099;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:2px solid #e8eaed;">Anexo</th>
+                </tr>
+              </thead>
+              <tbody id="tasksTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORTAR -->
+    <div class="pg" id="page-importar">
+      <div class="sh2"><div><div class="st">Importar Base</div><div class="ssub">Carregue a planilha Excel para atualizar os dados do sistema</div></div></div>
+
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start;">
+
+        <!-- Upload card -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:18px 20px;border-bottom:1px solid #f0f0f0;">
+            <p style="font-size:13px;font-weight:700;color:#111;margin-bottom:2px;">Arquivo Excel</p>
+            <p style="font-size:12px;color:#8b9099;">Selecione o arquivo .xlsx com a base de empresas e tarefas</p>
+          </div>
+          <div style="padding:20px;">
+            <label for="excelInput" id="dropzone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #e0e3e8;border-radius:12px;padding:36px 20px;cursor:pointer;transition:all .2s;background:#fafbfc;text-align:center;gap:10px;">
+              <div style="width:46px;height:46px;background:#e8f0fe;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a6ef8" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div>
+                <p style="font-size:13px;font-weight:600;color:#111;">Clique para selecionar</p>
+                <p style="font-size:12px;color:#8b9099;margin-top:2px;">Suporte: .xlsx e .xls</p>
+              </div>
+              <span id="fileName" style="display:none;font-size:12px;color:#1a6ef8;font-weight:600;background:#e8f0fe;padding:3px 12px;border-radius:99px;"></span>
+            </label>
+            <input type="file" id="excelInput" accept=".xlsx,.xls" style="display:none;" onchange="onFileSelect(this)">
+
+            <div style="display:flex;gap:8px;margin-top:14px;">
+              <button id="importBtn" class="btn bp" style="flex:1;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                Importar planilha
+              </button>
+              <button id="resetBtn" class="btn br">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Limpar
+              </button>
+            </div>
+
+            <div id="importStatus" style="display:none;margin-top:14px;border-radius:10px;padding:13px 15px;">
+              <div style="display:flex;gap:8px;align-items:flex-start;">
+                <span id="importStatusIcon" style="font-size:15px;flex-shrink:0;line-height:1.5;"></span>
+                <pre id="importStatusText" style="margin:0;white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.6;"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info sidebar -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="card" style="padding:16px;">
+            <p style="font-size:11px;font-weight:700;color:#8b9099;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Colunas esperadas</p>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;background:#e8f0fe;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a6ef8;flex-shrink:0;">A</span><span style="font-size:12px;color:#555;">GRUPO</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;background:#e8f0fe;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a6ef8;flex-shrink:0;">B</span><span style="font-size:12px;color:#555;">EMPRESAS</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;background:#e8f0fe;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a6ef8;flex-shrink:0;">C</span><span style="font-size:12px;color:#555;">TRIBUTAÇÃO</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;background:#e8f0fe;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a6ef8;flex-shrink:0;">D</span><span style="font-size:12px;color:#555;">TAREFA</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;background:#e8f0fe;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a6ef8;flex-shrink:0;">E→</span><span style="font-size:12px;color:#555;">JAN até DEZ (S/N)</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;background:#e8f0fe;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a6ef8;flex-shrink:0;">R</span><span style="font-size:12px;color:#555;">COLABORADOR</span></div>
+            </div>
+          </div>
+          <div class="card" style="padding:16px;">
+            <p style="font-size:11px;font-weight:700;color:#8b9099;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Tarefas reconhecidas</p>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">CHECK LIST</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">DISTRIBUIÇÃO DE LUCROS</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">DCTFWEB-REINF</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">RETIDOS</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">RECEITAS FINANCEIRA</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">FOLHA</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">FISCAL</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">FINANCEIRO</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">FECHAMENTO</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">IRPJ / CSLL</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">SPED ECD</span><span style="font-size:11.5px;color:#555;padding:4px 9px;background:#f5f6f8;border-radius:5px;">SPED ECF</span>
+            </div>
+          </div>
+          <div class="card" style="padding:16px;">
+            <p style="font-size:11px;font-weight:700;color:#8b9099;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Integração SharePoint</p>
+            <div class="mf" style="margin:0;">
+              <label>URL do Power Automate (Webhook)</label>
+              <input type="text" id="spFlowUrl" placeholder="https://prod-xx...logic.azure.com:443/workflows/...">
+            </div>
+            <button id="saveFlowBtn" class="btn bp btn-sm" style="margin-top:8px;">Salvar URL</button>
+            <div style="margin-top:8px;font-size:11px;color:#6b7280;">Quando salvar, o sistema envia atualizações de status, INICIO2 e FIM3 para o fluxo.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- USUÁRIOS (admin only) -->
+    <div class="pg" id="page-usuarios">
+      <div class="sh2">
+        <div><div class="st">Gerenciar Usuários</div><div class="ssub">Crie e edite os perfis de acesso ao sistema</div></div>
+        <button class="btn bp" onclick="openAddUser()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo usuário
+        </button>
+      </div>
+      <div class="user-grid" id="userGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL USUÁRIO -->
+<div id="mo" onclick="if(event.target===this)closeMo()">
+  <div class="mo-box">
+    <div class="mo-head"><h3 id="mo-title">Novo Usuário</h3><button class="mo-x" onclick="closeMo()">×</button></div>
+    <div class="mo-body">
+      <input type="hidden" id="mo-uid">
+      <div class="mf"><label>Nome completo</label><input type="text" id="mo-name" placeholder="Ex: João Silva"></div>
+      <div class="mf"><label>Login</label><input type="text" id="mo-login" placeholder="Ex: joao.silva"></div>
+      <div class="mf"><label>Senha</label><input type="password" id="mo-pass" placeholder="Mínimo 6 caracteres"></div>
+      <div class="mf"><label>Perfil de acesso</label>
+        <select id="mo-role" class="fs">
+          <option value="colaborador">Colaborador — pode marcar concluído (verde)</option>
+          <option value="gestor">Gestor — pode aprovar oficialmente (azul)</option>
+          <option value="admin">Administrador — acesso total</option>
+        </select>
+      </div>
+    </div>
+    <div class="mo-foot">
+      <button class="btn bs" onclick="closeMo()">Cancelar</button>
+      <button class="btn bp" onclick="saveUser()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+// ── USER SYSTEM ──────────────────────────────────────────
+const USERS_KEY = 'slt_tasks_users_v1';
+const SESSION_KEY = 'slt_tasks_session_v1';
+let CU = null;
+
+function getUsers() {
+  const raw = localStorage.getItem(USERS_KEY);
+  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
+  const defaults = [
+    { id: 'u1', name: 'Administrador', login: 'admin', pass: 'admin123', role: 'admin' },
+    { id: 'u2', name: 'Gestor', login: 'gestor', pass: 'gestor123', role: 'gestor' },
+    { id: 'u3', name: 'Colaborador', login: 'colaborador', pass: 'colab123', role: 'colaborador' }
+  ];
+  localStorage.setItem(USERS_KEY, JSON.stringify(defaults));
+  return defaults;
+}
+function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+
+function doLogin() {
+  const login = document.getElementById('lu').value.trim();
+  const pass = document.getElementById('lp').value;
+  const err = document.getElementById('lerr');
+  const user = getUsers().find(u => u.login === login && u.pass === pass);
+  if (!user) { err.textContent = 'Usuário ou senha incorretos.'; return; }
+  err.textContent = '';
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+  CU = user;
+  startApp();
+}
+
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  CU = null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('ls').style.display = 'flex';
+  document.getElementById('lu').value = '';
+  document.getElementById('lp').value = '';
+}
+
+function startApp() {
+  document.getElementById('ls').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  const av = document.getElementById('user-av');
+  av.textContent = CU.name.charAt(0).toUpperCase();
+  av.className = 'ua r-' + CU.role;
+  document.getElementById('user-nm').textContent = CU.name;
+  const roleLabels = { admin: 'Administrador', gestor: 'Gestor', colaborador: 'Colaborador' };
+  document.getElementById('user-role-label').textContent = roleLabels[CU.role] || CU.role;
+  document.getElementById('nav-users').style.display = CU.role === 'admin' ? 'flex' : 'none';
+  updateRoleHint();
+  initTasks();
+  renderUserGrid();
+}
+
+function updateRoleHint() {
+  const hint = document.getElementById('role-hint');
+  if (!CU || !hint) return;
+  const msgs = {
+    colaborador: 'Você pode marcar tarefas como concluídas (🟢 verde). Aguarde aprovação do gestor.',
+    gestor: 'Você pode aprovar tarefas concluídas pelo colaborador (🔵 azul = finalizado oficialmente).',
+    admin: 'Acesso total. Você pode alterar qualquer status de tarefa.'
+  };
+  hint.textContent = msgs[CU.role] || '';
+  hint.style.display = 'block';
+}
+
+// ── NAVIGATION ───────────────────────────────────────────
+function navigate(tab, el) {
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const pg = document.getElementById('page-' + tab);
+  if (pg) pg.classList.add('active');
+  const titles = { dashboard: 'Dashboard', tarefas: 'Tarefas', importar: 'Importar Base', usuarios: 'Gerenciar Usuários' };
+  document.getElementById('topbar-title').textContent = titles[tab] || tab;
+  if (tab === 'dashboard') renderDashboard();
+}
+
+function toggleSB() {
+  document.getElementById('sidebar').classList.toggle('hidden');
+  document.getElementById('topbar').classList.toggle('full');
+  document.getElementById('main').classList.toggle('full');
+}
+
+// ── TOAST ────────────────────────────────────────────────
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function syncTaskToSharePoint(payload) {
+  if (!SHAREPOINT_FLOW_URL) return;
+  try {
+    await fetch(SHAREPOINT_FLOW_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    console.warn("Falha ao sincronizar SharePoint:", e?.message || e);
+  }
+}
+
+function mountSharePointPayload(base) {
+  const year = currentWorkYear();
+  const fullMonth = MONTHS_PT_FULL[base.month] || base.month;
+  return {
+    ...base,
+    sheetName: monthSheetName(base.month, year),
+    fileNameHint: `${fullMonth} ${year}`,
+    workYear: year,
+    siteHint: "Contabilidade",
+    source: "contabil-tasks-slt"
+  };
+}
+
+// ── USER MANAGEMENT ──────────────────────────────────────
+function renderUserGrid() {
+  if (!CU || CU.role !== 'admin') return;
+  const users = getUsers();
+  const roleLabels = { admin: 'Administrador', gestor: 'Gestor', colaborador: 'Colaborador' };
+  const roleCls = { admin: 'rb-admin', gestor: 'rb-gestor', colaborador: 'rb-colaborador' };
+  const grid = document.getElementById('userGrid');
+  if (!grid) return;
+  grid.innerHTML = users.map(u => `
+    <div class="user-card">
+      <div class="user-card-left">
+        <div class="user-av r-${u.role}">${u.name.charAt(0).toUpperCase()}</div>
+        <div>
+          <div class="user-name">${u.name}</div>
+          <div class="user-meta">@${u.login} &nbsp;·&nbsp; <span class="role-badge ${roleCls[u.role]}">${roleLabels[u.role]}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn bs btn-sm" onclick="openEditUser('${u.id}')">Editar</button>
+        ${u.id !== 'u1' ? `<button class="btn br btn-sm" onclick="deleteUser('${u.id}')">Excluir</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+let _editingUid = null;
+function openAddUser() {
+  _editingUid = null;
+  document.getElementById('mo-title').textContent = 'Novo Usuário';
+  ['mo-name','mo-login','mo-pass'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('mo-role').value = 'colaborador';
+  document.getElementById('mo').classList.add('on');
+}
+function openEditUser(id) {
+  const u = getUsers().find(u => u.id === id);
+  if (!u) return;
+  _editingUid = id;
+  document.getElementById('mo-title').textContent = 'Editar Usuário';
+  document.getElementById('mo-name').value = u.name;
+  document.getElementById('mo-login').value = u.login;
+  document.getElementById('mo-pass').value = u.pass;
+  document.getElementById('mo-role').value = u.role;
+  document.getElementById('mo').classList.add('on');
+}
+function closeMo() { document.getElementById('mo').classList.remove('on'); }
+function saveUser() {
+  const name = document.getElementById('mo-name').value.trim();
+  const login = document.getElementById('mo-login').value.trim();
+  const pass = document.getElementById('mo-pass').value.trim();
+  const role = document.getElementById('mo-role').value;
+  if (!name || !login || pass.length < 4) { toast('Preencha todos os campos corretamente.', 'error'); return; }
+  const users = getUsers();
+  if (_editingUid) {
+    const idx = users.findIndex(u => u.id === _editingUid);
+    if (idx >= 0) users[idx] = { ...users[idx], name, login, pass, role };
+  } else {
+    users.push({ id: 'u_' + Date.now(), name, login, pass, role });
+  }
+  saveUsers(users);
+  closeMo();
+  renderUserGrid();
+  toast(_editingUid ? 'Usuário atualizado!' : 'Usuário criado!', 'success');
+}
+function deleteUser(id) {
+  if (!confirm('Excluir este usuário?')) return;
+  saveUsers(getUsers().filter(u => u.id !== id));
+  renderUserGrid();
+  toast('Usuário removido.', 'success');
+}
+
+// ── ORIGINAL TASK ENGINE ─────────────────────────────────
+const TASKS = [
+  "CHECK LIST",
+  "DISTRIBUIÇÃO DE  LUCROS",
+  "DCTFWEB-REINF",
+  "RETIDOS",
+  "RECEITAS FINANCEIRA",
+  "FOLHA",
+  "FISCAL",
+  "FINANCEIRO",
+  "FECHAMENTO",
+  "IRPJ / CSLL",
+  "SPED ECD",
+  "SPED ECF"
+];
+const MONTHS = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+const MONTHS_PT_FULL = {
+  JAN: "JANEIRO", FEV: "FEVEREIRO", MAR: "MARCO", ABR: "ABRIL",
+  MAI: "MAIO", JUN: "JUNHO", JUL: "JULHO", AGO: "AGOSTO",
+  SET: "SETEMBRO", OUT: "OUTUBRO", NOV: "NOVEMBRO", DEZ: "DEZEMBRO"
+};
+const STORAGE_KEY = "contabil_tasks_db_v1";
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbxZn2wQ1FmXOW4koYBiBVqhjP33oqFt3z6oCOnkhUtINV2OKIfgPgGkDhJKByZHGdI5xg/exec";
+const FLOW_URL = "https://default1f47888e7b8547d8949dfb58d6c47a.a7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/a82e34f0c29f4ec28e3e1ab19854d322/triggers/manual/paths/invoke?api-version=1";
+let SHAREPOINT_FLOW_URL = localStorage.getItem("slt_sharepoint_flow_url") || "";
+
+const state = {
+  month: MONTHS[new Date().getMonth()],
+  data: { companies: [], taskRules: {}, taskProgress: {} },
+  filtersDashboard: { empresa: "", grupo: "", codigo: "", regime: "", responsavel: "" },
+  filtersTasks: { empresa: "", grupo: "", codigo: "", regime: "", responsavel: "", tarefa: "" },
+  selectedCompanyId: null,
+  selectedCollaborator: null,
+  charts: { status: null, owner: null, monthly: null }
+};
+
+const uid = () => crypto.randomUUID ? crypto.randomUUID() : `id_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+const normalize = (t) => (t || "").toString().trim();
+const slug = (v) => normalize(v).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const monthSheetName = (month, year) => `${MONTHS_PT_FULL[month] || month}.${year}`;
+const currentWorkYear = () => new Date().getFullYear();
+const taskSlugMap = new Map(TASKS.map((t) => [slug(t), t]));
+const truthyMark = (v) => ["S", "SIM", "Y", "YES", "1", "X", "OK"].includes(normalize(v).toUpperCase());
+const MONTHLY_HIGHLIGHT_TASKS = ["FECHAMENTO","FOLHA","FISCAL","CHECK LIST","RECEITAS FINANCEIRA","DCTFWEB-REINF"];
+
+const Status = {
+  PENDENTE: "pendente",
+  COLABORADOR: "colaborador",
+  GESTOR: "gestor",
+  SM: "sm",
+  PARCIAL: "parcial"
+};
+
+const isFechamento = (taskName) => slug(taskName).includes("FECHAMENTO");
+function normalizeTaskStatus(taskName, rawStatus) {
+  const s = normalize(rawStatus).toLowerCase();
+  if (!s || s === "pendente") return Status.PENDENTE;
+  if (s === "colaborador") return Status.COLABORADOR;
+  if (s === "gestor") return Status.GESTOR;
+  if (s === "sm" || s === "s/m" || s === "semmovimento") return Status.SM;
+  if (s === "parcial") return isFechamento(taskName) ? Status.PARCIAL : Status.PENDENTE;
+  return Status.PENDENTE;
+}
+
+function canonicalTaskName(rawTask) {
+  const raw = normalize(rawTask);
+  if (!raw) return "";
+  const s = slug(raw);
+  if (taskSlugMap.has(s)) return taskSlugMap.get(s);
+  const fuzzy = TASKS.find((t) => s.includes(slug(t)) || slug(t).includes(s));
+  return fuzzy || raw;
+}
+
+function buildImportDiagnostics(workbook, sheet) {
+  const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
+  const firstRows = (aoa || []).slice(0, 4).map((r) => r.slice(0, 18).map((c) => normalize(c) || "-").join(" | "));
+  const headerObj = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  const headerKeys = headerObj[0] ? Object.keys(headerObj[0]).slice(0, 24) : [];
+  return [
+    `Aba usada: ${workbook.SheetNames[0]}`,
+    `Abas encontradas: ${workbook.SheetNames.join(", ")}`,
+    "",
+    "Primeiras linhas (A1:R4):",
+    ...firstRows,
+    "",
+    "Colunas detectadas (sheet_to_json):",
+    headerKeys.length ? headerKeys.join(" | ") : "(nenhuma)"
+  ].join("\n");
+}
+
+function getTaskState(companyId, taskName, month) {
+  state.data.taskProgress[companyId] ||= {};
+  state.data.taskProgress[companyId][taskName] ||= {};
+  state.data.taskProgress[companyId][taskName][month] ||= { status: Status.PENDENTE, attachmentName: "", startDate: "", endDate: "" };
+  const p = state.data.taskProgress[companyId][taskName][month];
+  p.status = normalizeTaskStatus(taskName, p.status);
+  p.startDate ||= "";
+  p.endDate ||= "";
+  return p;
+}
+const isTaskAvailable = (companyId, taskName, month) => !!state.data.taskRules[companyId]?.[taskName]?.[month];
+const persist = () => localStorage.setItem(STORAGE_KEY, JSON.stringify({ month: state.month, data: state.data }));
+
+function loadFromStorage() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return false;
+  try {
+    const parsed = JSON.parse(raw);
+    state.month = parsed.month || state.month;
+    state.data = parsed.data || state.data;
+    return true;
+  } catch { return false; }
+}
+
+function parseExcelRows(rows) {
+  const companiesByKey = new Map();
+  const taskRules = {};
+  const taskProgress = {};
+  const monthBySlug = new Map(MONTHS.map((m) => [slug(m), m]));
+  let lastNome = "";
+  let lastGrupo = "";
+  let lastCodigo = "";
+  let lastRegime = "";
+  let lastResponsavel = "";
+
+  const getField = (row, aliases) => {
+    for (const [key, value] of Object.entries(row)) {
+      if (aliases.includes(slug(key))) return normalize(value);
+    }
+    return "";
+  };
+
+  const detectTaskMonthCols = (row) => {
+    const mappings = [];
+    for (const [key] of Object.entries(row)) {
+      const keySlug = slug(key);
+      for (const [taskSlug, taskName] of taskSlugMap.entries()) {
+        if (!keySlug.includes(taskSlug)) continue;
+        for (const [monthSlug, month] of monthBySlug.entries()) {
+          if (keySlug.includes(monthSlug)) mappings.push({ col: key, taskName, month });
+        }
+      }
+    }
+    return mappings;
+  };
+
+  for (const row of rows) {
+    const nomeRaw = getField(row, ["EMPRESA", "EMPRESAS", "NOMEDAEMPRESA", "RAZAOSOCIAL", "CLIENTE"]);
+    const grupoRaw = getField(row, ["GRUPO"]);
+    const codigoRaw = getField(row, ["CODIGO", "CODIGODAEMPRESA", "CODEMPRESA", "IDEMPRESA"]);
+    const regimeRaw = getField(row, ["REGIME", "REGIMETRIBUTARIO", "TRIBUTACAO", "TIPOREGIME"]);
+    const responsavelRaw = getField(row, ["RESPONSAVEL", "COLABORADORRESPONSAVEL", "COLABORADOR", "COLABORADORA", "RESPONSAVELTECNICO", "USUARIO", "ANALISTA"]);
+    const isContinuation = !nomeRaw && !!lastNome;
+    const nome = nomeRaw || lastNome;
+    const grupo = grupoRaw || lastGrupo;
+    const codigo = codigoRaw || lastCodigo;
+    const regime = regimeRaw || lastRegime;
+    const responsavel = responsavelRaw || (isContinuation ? lastResponsavel : "");
+    const tarefaLinha = canonicalTaskName(row.TAREFA || row.Tarefa || row["NOME TAREFA"] || row["NOME_DA_TAREFA"]);
+    if (!nome) continue;
+    lastNome = nome;
+    if (grupo) lastGrupo = grupo;
+    if (codigo) lastCodigo = codigo;
+    if (regime) lastRegime = regime;
+    if (responsavel) lastResponsavel = responsavel;
+
+    const key = `${nome}__${codigo}`;
+    if (!companiesByKey.has(key)) companiesByKey.set(key, { id: uid(), nome, grupo, codigo, regime, responsavel });
+    const company = companiesByKey.get(key);
+    if (responsavelRaw) company.responsavel = responsavelRaw;
+    else if (!company.responsavel && responsavel) company.responsavel = responsavel;
+
+    const ensureTaskStructures = (taskName) => {
+      taskRules[company.id] ||= {};
+      taskRules[company.id][taskName] ||= {};
+      taskProgress[company.id] ||= {};
+      taskProgress[company.id][taskName] ||= {};
+      for (const m of MONTHS) {
+        taskProgress[company.id][taskName][m] ||= { status: Status.PENDENTE, attachmentName: "", startDate: "", endDate: "" };
+      }
+    };
+
+    if (tarefaLinha) {
+      const tarefaCanonica = canonicalTaskName(tarefaLinha);
+      ensureTaskStructures(tarefaCanonica);
+      for (const m of MONTHS) {
+        const cell = normalize(row[m] || row[m.toLowerCase()]);
+        taskRules[company.id][tarefaCanonica][m] = truthyMark(cell);
+      }
+      continue;
+    }
+
+    const mappings = detectTaskMonthCols(row);
+    for (const map of mappings) {
+      ensureTaskStructures(map.taskName);
+      const cell = normalize(row[map.col]);
+      taskRules[company.id][map.taskName][map.month] = truthyMark(cell);
+    }
+  }
+
+  return { companies: Array.from(companiesByKey.values()), taskRules, taskProgress };
+}
+
+function parseMatrixSheet(sheet) {
+  const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
+  if (!aoa.length) return null;
+  const monthAlias = {
+    JAN: "JAN", JANEIRO: "JAN",
+    FEV: "FEV", FEVEREIRO: "FEV",
+    MAR: "MAR", MARCO: "MAR", "MARÇO": "MAR",
+    ABR: "ABR", ABRIL: "ABR",
+    MAI: "MAI", MAIO: "MAI",
+    JUN: "JUN", JUNHO: "JUN",
+    JUL: "JUL", JULHO: "JUL",
+    AGO: "AGO", AGOSTO: "AGO",
+    SET: "SET", SETEMBRO: "SET",
+    OUT: "OUT", OUTUBRO: "OUT",
+    NOV: "NOV", NOVEMBRO: "NOV",
+    DEZ: "DEZ", DEZEMBRO: "DEZ"
+  };
+
+  const maxCols = Math.max(...aoa.map((r) => r.length));
+  const getRow = (i) => (aoa[i] || []);
+  const isDataRow = (r) => r.some((c) => truthyMark(c) || normalize(c).toUpperCase() === "N");
+  let dataStart = aoa.findIndex(isDataRow);
+  if (dataStart < 2) dataStart = 2;
+
+  const h1 = getRow(Math.max(0, dataStart - 2));
+  const h2 = getRow(Math.max(0, dataStart - 1));
+  const parentHeaders = [];
+  for (let c = 0; c < maxCols; c += 1) {
+    parentHeaders[c] = normalize(h1[c]) || (c > 0 ? parentHeaders[c - 1] : "");
+  }
+
+  const companyCols = {};
+  const taskMonthCols = [];
+  const pickCompanyKey = (s) => {
+    if (s.includes("EMPRESA") || s.includes("RAZAOSOCIAL") || s.includes("CLIENTE")) return "EMPRESA";
+    if (s.includes("GRUPO")) return "GRUPO";
+    if (s.includes("CODIGO")) return "CODIGO";
+    if (s.includes("REGIME") || s.includes("TRIBUT")) return "REGIME";
+    if (s.includes("RESPONS") || s.includes("COLABORADOR")) return "RESPONSAVEL";
+    return "";
+  };
+
+  for (let c = 0; c < maxCols; c += 1) {
+    const p = slug(parentHeaders[c]);
+    const s = slug(h2[c]);
+    const compFromP = pickCompanyKey(p);
+    const compFromS = pickCompanyKey(s);
+    if (compFromP) {
+      companyCols[compFromP] = c;
+      continue;
+    }
+    if (compFromS) {
+      companyCols[compFromS] = c;
+      continue;
+    }
+    const month = monthAlias[s] || monthAlias[p];
+    if (!month) continue;
+    const taskBaseSlug = p || s;
+    const taskName = canonicalTaskName(taskSlugMap.get(taskBaseSlug) || TASKS.find((t) => taskBaseSlug.includes(slug(t))) || taskBaseSlug);
+    if (taskName) taskMonthCols.push({ col: c, taskName, month });
+  }
+
+  if (!taskMonthCols.length) return null;
+  const rows = [];
+  for (let r = dataStart; r < aoa.length; r += 1) {
+    const row = getRow(r);
+    if (!normalize(row[companyCols.EMPRESA])) continue;
+    const base = {
+      EMPRESA: normalize(row[companyCols.EMPRESA]),
+      GRUPO: normalize(row[companyCols.GRUPO]),
+      CODIGO: normalize(row[companyCols.CODIGO]),
+      REGIME: normalize(row[companyCols.REGIME]),
+      RESPONSAVEL: normalize(row[companyCols.RESPONSAVEL])
+    };
+    const byTask = {};
+    taskMonthCols.forEach(({ col, taskName, month }) => {
+      byTask[taskName] ||= { ...base, TAREFA: taskName };
+      byTask[taskName][month] = normalize(row[col]);
+    });
+    rows.push(...Object.values(byTask));
+  }
+  return rows;
+}
+
+function setupTabs() { /* handled by navigate() */ }
+
+function fillMonthSelect() {
+  const sel = document.getElementById("monthSelect");
+  sel.innerHTML = MONTHS.map((m) => `<option value="${m}">${m}</option>`).join("");
+  sel.value = state.month;
+}
+
+// getFilteredCompanies overridden below
+
+// getTaskFilteredCompanies overridden below
+
+function getCompanyMonthTasks(companyId, month) {
+  const tasks = [];
+  const availableTaskNames = Object.keys(state.data.taskRules[companyId] || {});
+  for (const taskName of availableTaskNames) {
+    if (isTaskAvailable(companyId, taskName, month)) {
+      const p = getTaskState(companyId, taskName, month);
+      tasks.push({
+        taskName,
+        status: normalizeTaskStatus(taskName, p.status),
+        attachmentName: p.attachmentName,
+        startDate: p.startDate || "",
+        endDate: p.endDate || ""
+      });
+    }
+  }
+  const query = normalize(state.filtersTasks.tarefa).toLowerCase();
+  if (!query) return tasks;
+  return tasks.filter((t) => t.taskName.toLowerCase().includes(query));
+}
+
+function getCollaboratorTaskRows(collaborator) {
+  const companies = getTaskFilteredCompanies().filter(c => normalize(c.responsavel) === normalize(collaborator));
+  const rows = [];
+  companies.forEach((c) => {
+    const tasks = getCompanyMonthTasks(c.id, state.month);
+    tasks.forEach((t) => {
+      rows.push({
+        companyId: c.id,
+        companyName: c.nome,
+        taskName: t.taskName,
+        status: t.status,
+        attachmentName: t.attachmentName,
+        startDate: t.startDate || "",
+        endDate: t.endDate || ""
+      });
+    });
+  });
+  return rows;
+}
+
+function renderCollaboratorsList() {
+  const el = document.getElementById('collaboratorCards');
+  if (!el) return;
+  const companies = getTaskFilteredCompanies();
+  const map = {};
+  companies.forEach(co => {
+    const key = normalize(co.responsavel) || 'Sem responsável';
+    map[key] = map[key] || { companies: [], tasks: 0, pending: 0, colab: 0, gestor: 0, sm: 0, parcial: 0 };
+    map[key].companies.push(co);
+    const tasks = getCompanyMonthTasks(co.id, state.month);
+    map[key].tasks += tasks.length;
+    tasks.forEach(t => {
+      if (t.status === Status.PENDENTE) map[key].pending++;
+      else if (t.status === Status.COLABORADOR) map[key].colab++;
+      else if (t.status === Status.GESTOR) map[key].gestor++;
+      else if (t.status === Status.SM) map[key].sm++;
+      else if (t.status === Status.PARCIAL) map[key].parcial++;
+    });
+  });
+
+  const names = Object.keys(map).sort((a,b) => a.localeCompare(b));
+  if (!state.selectedCollaborator || !names.includes(state.selectedCollaborator)) {
+    state.selectedCollaborator = names[0] || null;
+  }
+
+  const colors = ['#7c3aed','#0d4bb5','#1db954','#e53935','#f59e0b','#06b6d4','#ec4899','#10b981'];
+  el.innerHTML = names.map((name, idx) => {
+    const d = map[name];
+    const total = Math.max(d.tasks, 1);
+    const pPend  = (d.pending / total * 100).toFixed(1);
+    const pColab = (d.colab   / total * 100).toFixed(1);
+    const pGest  = (d.gestor  / total * 100).toFixed(1);
+    const pSm    = (d.sm      / total * 100).toFixed(1);
+    const pParc  = (d.parcial / total * 100).toFixed(1);
+    const color  = colors[idx % colors.length];
+    const initials = name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    return `
+    <div class="collab-card ${name === state.selectedCollaborator ? 'active' : ''}" onclick="selectCollaborator('${name.replace(/'/g,"\'")}')">
+      <div class="collab-avatar" style="background:${color}">${initials}</div>
+      <div class="collab-card-name">${name}</div>
+      <div class="collab-card-meta">${d.companies.length} empresa${d.companies.length!==1?'s':''} · ${d.tasks} tarefa${d.tasks!==1?'s':''}</div>
+      <div class="collab-card-bar">
+        <div style="width:${pPend}%;background:#e53935"></div>
+        <div style="width:${pColab}%;background:#1db954"></div>
+        <div style="width:${pGest}%;background:#1a6ef8"></div>
+        <div style="width:${pSm}%;background:#f59e0b"></div>
+        <div style="width:${pParc}%;background:#8b5cf6"></div>
+      </div>
+      <div class="collab-card-stats">
+        ${d.pending  ? `<span class="collab-stat"><span class="collab-stat-dot" style="background:#e53935"></span>${d.pending} pend.</span>` : ''}
+        ${d.colab    ? `<span class="collab-stat"><span class="collab-stat-dot" style="background:#1db954"></span>${d.colab} concl.</span>` : ''}
+        ${d.gestor   ? `<span class="collab-stat"><span class="collab-stat-dot" style="background:#1a6ef8"></span>${d.gestor} aprov.</span>` : ''}
+        ${d.sm       ? `<span class="collab-stat"><span class="collab-stat-dot" style="background:#f59e0b"></span>${d.sm} S/M</span>` : ''}
+        ${d.parcial  ? `<span class="collab-stat"><span class="collab-stat-dot" style="background:#8b5cf6"></span>${d.parcial} parc.</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectCollaborator(name) {
+  state.selectedCollaborator = name;
+  // Rebuild empresa filter to show only this collaborator's companies
+  const collabCompanies = state.data.companies
+    .filter(c => normalize(c.responsavel) === name)
+    .map(c => c.nome).sort();
+  // Reset ms-t-empresa state to all selected for this collab
+  _msState['ms-t-empresa'] = new Set(collabCompanies);
+  buildMS('ms-t-empresa', collabCompanies, 'Todas');
+  // Rebuild grupo filter too
+  const collabGrupos = [...new Set(state.data.companies
+    .filter(c => normalize(c.responsavel) === name)
+    .map(c => c.grupo).filter(Boolean))].sort();
+  _msState['ms-t-grupo'] = new Set(collabGrupos);
+  buildMS('ms-t-grupo', collabGrupos, 'Todos');
+  renderCollaboratorsList();
+  renderSelectedCollaboratorTasks();
+  document.getElementById('collabTaskPanel').style.display = 'block';
+  document.getElementById('collabTaskPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeCollabPanel() {
+  document.getElementById('collabTaskPanel').style.display = 'none';
+  state.selectedCollaborator = null;
+  // Restore full empresa/grupo filters
+  fillAllFilters();
+  renderCollaboratorsList();
+}
+
+
+
+function fillFilterOptions() { fillAllFilters(); }
+
+
+
+
+
+
+function showImportStatus(type, msg) {
+  const box  = document.getElementById("importStatus");
+  const icon = document.getElementById("importStatusIcon");
+  const text = document.getElementById("importStatusText");
+  if (!box) return;
+  box.style.display = "block";
+  text.textContent  = msg;
+  box.className     = "import-status " + type;
+  icon.textContent  = { loading:"⏳", success:"✅", error:"❌" }[type] || "ℹ️";
+}
+function onFileSelect(input) {
+  const fn = document.getElementById("fileName");
+  if (input.files[0] && fn) {
+    fn.textContent     = input.files[0].name;
+    fn.style.display   = "inline-block";
+    const dz = document.getElementById("dropzone");
+    if (dz) { dz.style.borderColor = "#1a6ef8"; dz.style.background = "#f0f6ff"; }
+  }
+}
+async function importExcel() {
+  const file = document.getElementById("excelInput").files[0];
+  if (!file) { showImportStatus("error", "Selecione um arquivo .xlsx primeiro."); return; }
+  showImportStatus("loading", "Lendo arquivo...");
+  try {
+    const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+    const sheetName = wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    const rowsObj = XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
+    const parsed = rowsObj.length ? parseExcelRows(rowsObj) : null;
+    const matrixRows = parseMatrixSheet(ws);
+    const parsedMatrix = matrixRows && matrixRows.length ? parseExcelRows(matrixRows) : null;
+    const scoreParse = (p) => {
+      if (!p || !p.companies?.length) return { companies: 0, resp: 0, active: 0, score: -1 };
+      const resp = new Set(p.companies.map(c => normalize(c.responsavel)).filter(Boolean)).size;
+      let active = 0;
+      Object.values(p.taskRules || {}).forEach((byTask) => {
+        Object.values(byTask || {}).forEach((byMonth) => {
+          Object.values(byMonth || {}).forEach((flag) => { if (flag) active += 1; });
+        });
+      });
+      return { companies: p.companies.length, resp, active, score: (active * 1000) + (resp * 10) + p.companies.length };
+    };
+    const p1 = scoreParse(parsed);
+    const p2 = scoreParse(parsedMatrix);
+    let data = p1.score >= p2.score ? parsed : parsedMatrix;
+    if (!data || !data.companies?.length) data = parsed || parsedMatrix || { companies: [], taskRules: {}, taskProgress: {} };
+    const { companies, taskRules } = data;
+    const taskProgress = {};
+
+    if (!companies.length) {
+      showImportStatus("error", "Nenhuma empresa encontrada. Verifique o arquivo."); return;
+    }
+
+    companies.forEach((c) => {
+      const companyTasks = Object.keys(taskRules[c.id] || {});
+      taskProgress[c.id] ||= {};
+      companyTasks.forEach((taskName) => {
+        taskProgress[c.id][taskName] ||= {};
+        MONTHS.forEach((m) => {
+          taskProgress[c.id][taskName][m] ||= { status: Status.PENDENTE, attachmentName: "", startDate: "", endDate: "" };
+        });
+      });
+    });
+
+    state.data = { companies, taskRules, taskProgress };
+    localStorage.removeItem(STORAGE_KEY);
+
+    const monthTotals = Object.fromEntries(MONTHS.map(m => [m, 0]));
+    companies.forEach(c => MONTHS.forEach(m => { monthTotals[m] += getCompanyMonthTasks(c.id, m).length; }));
+    if (!monthTotals[state.month]) {
+      const best = MONTHS.find(m => monthTotals[m] > 0);
+      if (best) { state.month = best; document.getElementById("monthSelect").value = best; }
+    }
+
+    const resps = [...new Set(companies.map(c => normalize(c.responsavel)).filter(Boolean))].sort();
+    state.selectedCollaborator = resps[0] || null;
+    state.selectedCompanyId = companies[0]?.id || null;
+    persist();
+    fillFilterOptions();
+    renderCollaboratorsList();
+    renderSelectedCollaboratorTasks();
+    renderDashboard();
+
+    const totalTasks = Object.values(taskRules).reduce((a,t) => a + Object.keys(t).length, 0);
+    showImportStatus("success",
+      `Importação concluída!\n\n🏢 Empresas: ${companies.length}\n📋 Tarefas mapeadas: ${totalTasks}\n👥 Responsáveis: ${resps.length}\n📅 Mês ativo: ${state.month}`);
+
+  } catch(e) {
+    showImportStatus("error", "Erro ao processar arquivo:\n" + e.message);
+  }
+}
+
+function setupEvents() {
+  const mSel = document.getElementById("monthSelect");
+  if (mSel) mSel.addEventListener("change", e => {
+    state.month = e.target.value; persist(); renderCollaboratorsList(); renderSelectedCollaboratorTasks(); renderDashboard();
+  });
+  const importBtn = document.getElementById("importBtn");
+  if (importBtn) importBtn.addEventListener("click", importExcel);
+  const flowInput = document.getElementById("spFlowUrl");
+  if (flowInput) flowInput.value = SHAREPOINT_FLOW_URL;
+  const saveFlowBtn = document.getElementById("saveFlowBtn");
+  if (saveFlowBtn) saveFlowBtn.addEventListener("click", () => {
+    SHAREPOINT_FLOW_URL = (flowInput?.value || "").trim();
+    localStorage.setItem("slt_sharepoint_flow_url", SHAREPOINT_FLOW_URL);
+    toast("URL do Power Automate salva.", "success");
+  });
+  const resetBtn = document.getElementById("resetBtn");
+  if (resetBtn) resetBtn.addEventListener("click", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    state.data = { companies: [], taskRules: {}, taskProgress: {} };
+    state.selectedCollaborator = null;
+    document.getElementById("excelInput").value = "";
+    const fn = document.getElementById("fileName");
+    if (fn) { fn.textContent = ""; fn.style.display = "none"; }
+    fillFilterOptions();
+    renderCollaboratorsList();
+    renderSelectedCollaboratorTasks();
+    renderDashboard();
+    showImportStatus("success", "Base limpa com sucesso.");
+    navigate('importar', document.querySelector('.ni[onclick*="importar"]'));
+  });
+}
+
+function initTasks() {
+  fillMonthSelect();
+  setupTabs();
+  setupEvents();
+  if (loadFromStorage()) document.getElementById("monthSelect").value = state.month;
+  fillFilterOptions();
+  const resps = [...new Set(state.data.companies.map(c => normalize(c.responsavel)).filter(Boolean))].sort();
+  state.selectedCollaborator ||= resps[0] || null;
+  renderCollaboratorsList();
+  renderSelectedCollaboratorTasks();
+  renderDashboard();
+}
+
+
+// ── OVERRIDE: renderSelectedCompanyTasks (3-state role-based) ──
+function renderSelectedCollaboratorTasks() {
+  const nameEl  = document.getElementById('selectedCollabName');
+  const mesEl   = document.getElementById('selectedCollabMes');
+  const bar     = document.getElementById('colabProgressBar');
+  const legend  = document.getElementById('colabProgressLegend');
+  const pctEl   = document.getElementById('colabProgressPct');
+  const miniEl  = document.getElementById('colabMiniStats');
+  const body    = document.getElementById('tasksTableBody');
+  const collaborator = state.selectedCollaborator;
+
+  if (!collaborator || !body) return;
+  if (nameEl) nameEl.textContent = collaborator;
+  if (mesEl) mesEl.textContent = 'Mês: ' + state.month;
+
+  const tasks = getCollaboratorTaskRows(collaborator);
+  const pending  = tasks.filter(t => t.status === Status.PENDENTE).length;
+  const colab    = tasks.filter(t => t.status === Status.COLABORADOR).length;
+  const gestor   = tasks.filter(t => t.status === Status.GESTOR).length;
+  const sm       = tasks.filter(t => t.status === Status.SM).length;
+  const parcial  = tasks.filter(t => t.status === Status.PARCIAL).length;
+  const total    = tasks.length;
+  const denom    = Math.max(total, 1);
+  const pct      = total ? Math.round((gestor / total) * 100) : 0;
+
+  if (pctEl) pctEl.textContent = pct + '% aprovado';
+  if (bar) bar.innerHTML = `
+    <div style="width:${(pending/denom)*100}%;background:#e53935;transition:width .4s"></div>
+    <div style="width:${(colab/denom)*100}%;background:#1db954;transition:width .4s"></div>
+    <div style="width:${(gestor/denom)*100}%;background:#1a6ef8;transition:width .4s"></div>
+    <div style="width:${(sm/denom)*100}%;background:#f59e0b;transition:width .4s"></div>
+    <div style="width:${(parcial/denom)*100}%;background:#8b5cf6;transition:width .4s"></div>`;
+
+  if (legend) legend.innerHTML = [
+    { color:'#e53935', label:'Pendente',    val: pending },
+    { color:'#1db954', label:'Concluído',   val: colab   },
+    { color:'#1a6ef8', label:'Aprovado',    val: gestor  },
+    { color:'#f59e0b', label:'S/M',         val: sm      },
+    { color:'#8b5cf6', label:'Parcial',     val: parcial },
+  ].filter(x => x.val > 0).map(x =>
+    `<span class="prog-legend-item"><span class="prog-legend-dot" style="background:${x.color}"></span>${x.label}: <strong>${x.val}</strong></span>`
+  ).join('');
+
+  if (miniEl) miniEl.innerHTML = [
+    { val: total,   lbl: 'Total',     color: '#111'    },
+    { val: pending, lbl: 'Pendentes', color: '#e53935' },
+    { val: colab,   lbl: 'Concluídas',color: '#1db954' },
+    { val: gestor,  lbl: 'Aprovadas', color: '#1a6ef8' },
+    { val: sm,      lbl: 'S/M',       color: '#f59e0b' },
+    { val: parcial, lbl: 'Parcial',   color: '#8b5cf6' },
+  ].map(x => `
+    <div class="mini-stat-cell">
+      <div class="mini-stat-val" style="color:${x.color}">${x.val}</div>
+      <div class="mini-stat-lbl">${x.lbl}</div>
+    </div>`).join('');
+
+  const role = CU ? CU.role : 'colaborador';
+  if (!tasks.length) {
+    body.innerHTML = '<tr><td colspan="7" style="color:#8b9099;text-align:center;padding:32px 0;">Nenhuma tarefa disponível para este colaborador neste mês.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = tasks.map(t => {
+    const st = t.status;
+    let pillClass = 'pill-pendente', pillLabel = 'Pendente';
+    if (st === Status.COLABORADOR) { pillClass = 'pill-colaborador'; pillLabel = 'Concluído'; }
+    else if (st === Status.GESTOR) { pillClass = 'pill-gestor';      pillLabel = 'Aprovado';  }
+    else if (st === Status.SM)     { pillClass = 'pill-sm';          pillLabel = 'S/M';       }
+    else if (st === Status.PARCIAL){ pillClass = 'pill-parcial';     pillLabel = 'Parcial';   }
+
+    let btns = '';
+    const isPend = !st || st === Status.PENDENTE;
+    const bStyle = 'display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12px;font-weight:600;font-family:\'DM Sans\',sans-serif;cursor:pointer;border:none;transition:all .18s;white-space:nowrap;';
+    if (role === 'colaborador' || role === 'admin') {
+      if (isPend) btns += `<button class="task-btn" data-company="${t.companyId}" data-task="${t.taskName}" data-act="colab" style="${bStyle}background:#1db954;color:#fff;" onmouseover="this.style.background='#17a34a'" onmouseout="this.style.background='#1db954'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Concluir</button>`;
+      if (isPend) btns += `<button class="task-btn" data-company="${t.companyId}" data-task="${t.taskName}" data-act="sm" style="${bStyle}background:#fef3c7;color:#92400e;border:1px solid #fcd34d;" onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">S/M</button>`;
+      if (st === Status.COLABORADOR || st === Status.SM || st === Status.PARCIAL)
+        btns += `<button class="task-btn" data-company="${t.companyId}" data-task="${t.taskName}" data-act="reabrir" style="${bStyle}background:#fef2f2;color:#991b1b;border:1px solid #fecaca;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Reabrir</button>`;
+    }
+    if ((role === 'gestor' || role === 'admin') && st === Status.COLABORADOR)
+      btns += `<button class="task-btn" data-company="${t.companyId}" data-task="${t.taskName}" data-act="aprovar" style="${bStyle}background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;" onmouseover="this.style.background='#bfdbfe'" onmouseout="this.style.background='#dbeafe'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Aprovar</button>`;
+    if ((role === 'gestor' || role === 'admin') && st === Status.GESTOR)
+      btns += `<button class="task-btn" data-company="${t.companyId}" data-task="${t.taskName}" data-act="reabrir" style="${bStyle}background:#fef2f2;color:#991b1b;border:1px solid #fecaca;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Reabrir</button>`;
+    if (!btns) btns = '<span style="color:#bbb;font-size:12px;">—</span>';
+
+    const co = state.data.companies.find(x => x.id === t.companyId);
+    return `<tr>
+      <td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${co?.nome||''}">${co?.nome||''}</td>
+      <td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;font-size:13px;font-weight:600;">${t.taskName}</td>
+      <td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="pill ${pillClass}">${pillLabel}</span></td>
+      <td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;font-size:12px;color:#8b9099;">${t.startDate||'—'}</td>
+      <td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;font-size:12px;color:#8b9099;">${t.endDate||'—'}</td>
+      <td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${btns}</div></td>
+      <td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><input type="file" class="attach-input" data-company="${t.companyId}" data-task="${t.taskName}" style="font-size:11px;max-width:140px;">${t.attachmentName?`<div style="font-size:11px;color:#8b9099;margin-top:2px;">📎 ${t.attachmentName}</div>`:''}</td>
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('.task-btn').forEach(btn => btn.addEventListener('click', () => {
+    const act = btn.dataset.act;
+    if (act === 'colab') { openBaixaModal(btn.dataset.company, btn.dataset.task, state.month); return; }
+    const p = getTaskState(btn.dataset.company, btn.dataset.task, state.month);
+    if (act === 'aprovar') p.status = Status.GESTOR;
+    else if (act === 'sm') p.status = Status.SM;
+    else if (act === 'parcial') p.status = Status.PARCIAL;
+    else p.status = Status.PENDENTE;
+    persist(); renderCollaboratorsList(); renderSelectedCollaboratorTasks(); renderDashboard();
+    toast(act === 'aprovar' ? 'Tarefa aprovada! 🔵' : 'Status atualizado.', act === 'aprovar' ? 'success' : '');
+  }));
+  body.querySelectorAll('.attach-input').forEach(inp => inp.addEventListener('change', e => {
+    const p = getTaskState(inp.dataset.company, inp.dataset.task, state.month);
+    p.attachmentName = e.target.files[0]?.name || '';
+    persist(); renderSelectedCollaboratorTasks();
+  }));
+}
+
+// ── OVERRIDE: collectDashboardData (3-state) ──
+function collectDashboardData() {
+  const companies = getFilteredCompanies();
+  let total = 0, done = 0, approved = 0, colab = 0, sm = 0, parcial = 0;
+  const byOwner = {};
+  const monthlyTasks = Object.fromEntries(MONTHLY_HIGHLIGHT_TASKS.map(t => [t, 0]));
+  for (const c of companies) {
+    const allTasks = getCompanyMonthTasks(c.id, state.month);
+    const tarefaF = getMSValues('ms-d-tarefa');
+    const tasks = tarefaF ? allTasks.filter(t => tarefaF.includes(t.taskName)) : allTasks;
+    total += tasks.length;
+    approved += tasks.filter(t => t.status === Status.GESTOR).length;
+    colab += tasks.filter(t => t.status === Status.COLABORADOR).length;
+    sm += tasks.filter(t => t.status === Status.SM).length;
+    parcial += tasks.filter(t => t.status === Status.PARCIAL).length;
+    tasks.forEach((t) => {
+      const found = MONTHLY_HIGHLIGHT_TASKS.find(mt => slug(t.taskName) === slug(mt));
+      if (found) monthlyTasks[found] += 1;
+    });
+    const key = c.responsavel || 'Sem responsável';
+    byOwner[key] = (byOwner[key] || 0) + tasks.length;
+  }
+  const pending = total - approved - colab - sm - parcial;
+  done = approved + colab + sm + parcial;
+  const rate = total ? ((done / total) * 100).toFixed(1) : '0.0';
+  return { total, done, approved, colab, pending, sm, parcial, rate, byOwner, monthlyTasks };
+}
+
+// ── OVERRIDE: renderDashboard (3-state) ──
+function renderDashboard() {
+  const d = collectDashboardData();
+  const shortLabel = (v, max = 16) => {
+    const txt = String(v || '');
+    return txt.length > max ? txt.slice(0, max - 1) + '…' : txt;
+  };
+  const wrapLabel = (txt, max = 12) => {
+    const words = String(txt || '').split(' ');
+    const lines = [];
+    let current = '';
+    words.forEach((w) => {
+      const next = current ? `${current} ${w}` : w;
+      if (next.length <= max) current = next;
+      else {
+        if (current) lines.push(current);
+        current = w;
+      }
+    });
+    if (current) lines.push(current);
+    return lines.slice(0, 2);
+  };
+  document.getElementById('kpiTotal').textContent = d.total;
+  document.getElementById('kpiDone').textContent = d.done;
+  document.getElementById('kpiPending').textContent = d.pending;
+  document.getElementById('kpiRate').textContent = d.rate + '%';
+  document.getElementById('kpiSm').textContent = d.sm;
+  document.getElementById('kpiParcial').textContent = d.parcial;
+  if (state.charts.status) state.charts.status.destroy();
+  if (state.charts.owner) state.charts.owner.destroy();
+  if (state.charts.monthly) state.charts.monthly.destroy();
+  state.charts.status = new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Aprovados (Gestor)', 'Concluídos (Colaborador)', 'S/M', 'Parcial (Fechamento)', 'Pendentes'],
+      datasets: [{ data: [d.done, d.colab, d.sm, d.parcial, d.pending], backgroundColor: ['#1a6ef8','#1db954','#f59e0b','#7c3aed','#e53935'], borderWidth: 0 }]
+    },
+    options: { plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans' }, padding: 14, boxWidth: 12 } } }, cutout: '65%' }
+  });
+  state.charts.owner = new Chart(document.getElementById('ownerChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(d.byOwner).map(n => shortLabel(n, 26)),
+      datasets: [{
+        data: Object.values(d.byOwner),
+        backgroundColor: ['#2563eb','#38bdf8','#22c55e','#f59e0b','#a855f7','#ef4444'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { family: 'DM Sans', size: 11 }, usePointStyle: true, boxWidth: 8, padding: 12 }
+        }
+      },
+      cutout: '62%'
+    }
+  });
+  const monthlyMap = {
+    "FECHAMENTO":"FECH.",
+    "FOLHA":"FOLHA",
+    "FISCAL":"FISCAL",
+    "CHECK LIST":"CHECK",
+    "RECEITAS FINANCEIRA":"REC. FIN.",
+    "DCTFWEB-REINF":"DCTF/REINF"
+  };
+  state.charts.monthly = new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(d.monthlyTasks).map(k => wrapLabel(monthlyMap[k] || k, 11)),
+      datasets: [{
+        label: 'Tarefas do mês',
+        data: Object.values(d.monthlyTasks),
+        backgroundColor: '#2563eb',
+        borderRadius: 6,
+        maxBarThickness: 34
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { font: { family: 'DM Sans', size: 11 }, color: '#6b7280' },
+          grid: { color: '#eef2f7' }
+        },
+        x: {
+          ticks: { font: { family: 'DM Sans', size: 11 }, color: '#374151', maxRotation: 0, minRotation: 0 },
+          grid: { display: false }
+        }
+      },
+      layout: { padding: { bottom: 6, left: 4, right: 4 } }
+    }
+  });
+}
+
+
+// ── MULTI-SELECT ENGINE ───────────────────────────────────
+const _msState = {}; // { msId: Set of selected values }
+
+function toggleMS(id) {
+  const drop = document.getElementById(id + '-drop');
+  const btn  = document.querySelector('#' + id + ' .ms-btn');
+  const isOpen = drop.classList.contains('open');
+  // close all
+  document.querySelectorAll('.ms-drop.open').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.ms-btn.open').forEach(b => b.classList.remove('open'));
+  if (!isOpen) { drop.classList.add('open'); btn.classList.add('open'); }
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ms-wrap')) {
+    document.querySelectorAll('.ms-drop.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.ms-btn.open').forEach(b => b.classList.remove('open'));
+  }
+});
+
+function msSearch(id, q) {
+  const list = document.getElementById(id + '-list');
+  if (!list) return;
+  list.querySelectorAll('.ms-item').forEach(item => {
+    item.style.display = item.querySelector('.ms-item-label').textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function msAll(id, checked) {
+  const list = document.getElementById(id + '-list');
+  if (!list) return;
+  list.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = checked);
+  _msState[id] = checked ? new Set([...list.querySelectorAll('input')].map(i => i.value)) : new Set();
+  updateMSLabel(id);
+  applyMSFilters();
+}
+
+function updateMSLabel(id) {
+  const list = document.getElementById(id + '-list');
+  if (!list) return;
+  const all = list.querySelectorAll('input[type=checkbox]');
+  const checked = list.querySelectorAll('input[type=checkbox]:checked');
+  const lbl = document.getElementById(id + '-lbl');
+  if (!lbl) return;
+  if (checked.length === 0) lbl.textContent = 'Nenhum';
+  else if (checked.length === all.length) lbl.textContent = checked.length <= 3 ? [...checked].map(c=>c.value).join(', ') : 'Todos (' + all.length + ')';
+  else lbl.textContent = checked.length + ' sel.';
+}
+
+function buildMS(id, values, defaultAllLabel) {
+  const list = document.getElementById(id + '-list');
+  if (!list) return;
+  if (!_msState[id]) _msState[id] = new Set(values); // all selected by default
+  list.innerHTML = values.length === 0
+    ? '<div class="ms-empty">Sem opções</div>'
+    : values.map(v => `
+      <label class="ms-item">
+        <input type="checkbox" value="${v}" ${_msState[id].has(v) ? 'checked' : ''}
+          onchange="_msState['${id}'] = new Set([...document.querySelectorAll('#${id}-list input:checked')].map(i=>i.value)); updateMSLabel('${id}'); applyMSFilters();">
+        <span class="ms-item-label">${v}</span>
+      </label>`).join('');
+  updateMSLabel(id);
+}
+
+function getMSValues(id) {
+  // returns null = all selected, or array of selected
+  const list = document.getElementById(id + '-list');
+  if (!list) return null;
+  const all = list.querySelectorAll('input[type=checkbox]');
+  const checked = [...list.querySelectorAll('input[type=checkbox]:checked')].map(i => i.value);
+  if (checked.length === all.length) return null; // all = no filter
+  return checked;
+}
+
+// ── POPULATE FILTERS ─────────────────────────────────────
+function fillAllFilters() {
+  const companies = state.data.companies;
+  const unique = arr => [...new Set(arr.filter(Boolean))].sort();
+  const grupos      = unique(companies.map(c => c.grupo));
+  const empresas    = unique(companies.map(c => c.nome));
+  const responsaveis= unique(companies.map(c => c.responsavel));
+  const regimes     = unique(companies.map(c => c.regime));
+  const tarefas     = TASKS;
+
+  // Dashboard filters
+  buildMS('ms-d-grupo',      grupos,       'Todos');
+  buildMS('ms-d-empresa',    empresas,     'Todas');
+  buildMS('ms-d-responsavel',responsaveis, 'Todos');
+  buildMS('ms-d-tarefa',     tarefas,      'Todas');
+  // Task tab filters — always use full list for group/regime, but empresa filtered by collaborator
+  buildMS('ms-t-grupo',   grupos,    'Todos');
+  buildMS('ms-t-empresa', empresas,  'Todas');
+  buildMS('ms-t-regime',  regimes,   'Todos');
+}
+
+// ── APPLY FILTERS ─────────────────────────────────────────
+function applyMSFilters() {
+  renderDashboard();
+  renderCollaboratorsList();
+  renderSelectedCollaboratorTasks();
+}
+
+function clearAllFilters() {
+  ['ms-d-grupo','ms-d-empresa','ms-d-responsavel','ms-d-tarefa'].forEach(id => {
+    const list = document.getElementById(id + '-list');
+    if (list) { list.querySelectorAll('input').forEach(i => i.checked = true); }
+    if (_msState[id]) { const all = list ? [...list.querySelectorAll('input')].map(i=>i.value) : []; _msState[id] = new Set(all); }
+    updateMSLabel(id);
+  });
+  renderDashboard();
+}
+
+function clearAllTaskFilters() {
+  ['ms-t-grupo','ms-t-empresa','ms-t-responsavel','ms-t-regime'].forEach(id => {
+    const list = document.getElementById(id + '-list');
+    if (list) { list.querySelectorAll('input').forEach(i => i.checked = true); }
+    if (_msState[id]) { const all = list ? [...list.querySelectorAll('input')].map(i=>i.value) : []; _msState[id] = new Set(all); }
+    updateMSLabel(id);
+  });
+  const names = [...new Set(getTaskFilteredCompanies().map(c => normalize(c.responsavel)).filter(Boolean))].sort();
+  state.selectedCollaborator = names[0] || null;
+  renderCollaboratorsList();
+  renderSelectedCollaboratorTasks();
+}
+
+// ── OVERRIDE getFilteredCompanies (dashboard) ─────────────
+function getFilteredCompanies() {
+  return state.data.companies.filter(c => {
+    const grupos = getMSValues('ms-d-grupo');
+    const empresas = getMSValues('ms-d-empresa');
+    const resps = getMSValues('ms-d-responsavel');
+    if (grupos && !grupos.includes(c.grupo)) return false;
+    if (empresas && !empresas.includes(c.nome)) return false;
+    if (resps && !resps.includes(c.responsavel)) return false;
+    return true;
+  });
+}
+
+// ── OVERRIDE getTaskFilteredCompanies ─────────────────────
+function getTaskFilteredCompanies() {
+  return state.data.companies.filter(c => {
+    const grupos = getMSValues('ms-t-grupo');
+    const empresas = getMSValues('ms-t-empresa');
+    const regimes = getMSValues('ms-t-regime');
+    if (grupos && !grupos.includes(c.grupo)) return false;
+    if (empresas && !empresas.includes(c.nome)) return false;
+    if (regimes && !regimes.includes(c.regime)) return false;
+    // If a collaborator is selected, only show their companies
+    if (state.selectedCollaborator) {
+      if (normalize(c.responsavel) !== state.selectedCollaborator) return false;
+    }
+    return true;
+  });
+}
+
+// ── OVERRIDE getCompanyMonthTasks (add tarefa filter on dashboard) ─
+const _origGetCompanyMonthTasks = getCompanyMonthTasks;
+function getCompanyMonthTasksFiltered(companyId, month) {
+  const tasks = _origGetCompanyMonthTasks(companyId, month);
+  const tarefaFilter = getMSValues('ms-d-tarefa');
+  if (!tarefaFilter) return tasks;
+  return tasks.filter(t => tarefaFilter.includes(t.taskName));
+}
+
+// ── OVERRIDE fillFilterOptions (replaced by fillAllFilters) ─
+function fillFilterOptions() { fillAllFilters(); }
+
+
+
+// ── BAIXA MODAL ──────────────────────────────────────────
+let _baixaPending = null;
+
+function openBaixaModal(companyId, taskName, month) {
+  _baixaPending = { companyId, taskName, month };
+  const co = state.data.companies.find(c => c.id === companyId);
+  document.getElementById('mo-baixa-info').innerHTML =
+    '<strong>' + (co?.nome || companyId) + '</strong><br>' + taskName + ' · ' + month;
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('mo-baixa-inicio').value = today;
+  document.getElementById('mo-baixa-fim').value = today;
+  document.getElementById('mo-baixa').style.display = 'flex';
+}
+
+function closeBaixaMo() {
+  document.getElementById('mo-baixa').style.display = 'none';
+  _baixaPending = null;
+}
+
+async function confirmBaixa() {
+  if (!_baixaPending) return;
+  const { companyId, taskName, month } = _baixaPending;
+  const dataInicio = document.getElementById('mo-baixa-inicio').value;
+  const dataFim    = document.getElementById('mo-baixa-fim').value;
+  if (!dataInicio || !dataFim) { toast('Preencha as duas datas.', 'error'); return; }
+  const p = getTaskState(companyId, taskName, month);
+  p.status    = Status.COLABORADOR;
+  p.startDate = dataInicio;
+  p.endDate   = dataFim;
+  persist();
+  closeBaixaMo();
+  renderCollaboratorsList();
+  renderSelectedCollaboratorTasks();
+  renderDashboard();
+  const fmt = d => { const [y,m,dd] = d.split('-'); return dd + '/' + m + '/' + y; };
+  const co = state.data.companies.find(c => c.id === companyId);
+  toast('Enviando para o SharePoint...', '');
+  try {
+    const payload = JSON.stringify({
+      empresa: co?.nome || companyId,
+      tarefa: taskName,
+      mes: month,
+      dataInicio: fmt(dataInicio),
+      dataFim: fmt(dataFim)
+    });
+    const res = await fetch('https://script.google.com/macros/s/AKfycbxZn2wQ1FmXOW4koYBiBVqhjP33oqFt3z6oCOnkhUtINV2OKIfgPgGkDhJKByZHGdI5xg/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
+    const result = await res.json();
+    if (result.status !== 'ok') throw new Error(result.message || 'Erro no proxy');
+    toast('Planilha atualizada no SharePoint!', 'success');
+  } catch(e) {
+    toast('Baixa salva. Erro ao sincronizar.', 'error');
+  }
+}
+
+// ── BOOT ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const s = sessionStorage.getItem(SESSION_KEY);
+  if (s) { try { CU = JSON.parse(s); startApp(); } catch(e) { sessionStorage.removeItem(SESSION_KEY); } }
+});
+</script>
+
+<!-- MODAL BAIXA COLABORADOR -->
+<div id="mo-baixa" onclick="if(event.target===this)closeBaixaMo()" style="position:fixed;inset:0;background:rgba(7,46,122,.48);z-index:6000;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.22);font-family:'DM Sans',sans-serif;">
+    <div style="padding:20px 22px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#111;">Registrar Conclusão</div>
+        <div style="font-size:12px;color:#8b9099;margin-top:2px;">Informe as datas de execução da tarefa</div>
+      </div>
+      <button onclick="closeBaixaMo()" style="background:#f5f6f8;border:none;cursor:pointer;width:30px;height:30px;border-radius:50%;font-size:16px;color:#8b9099;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+    </div>
+    <div style="padding:20px 22px;">
+      <div id="mo-baixa-info" style="font-size:13px;color:#555;background:#f0f6ff;border-left:3px solid #1a6ef8;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:18px;line-height:1.6;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#1a6ef8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">Data de Início</label>
+          <input type="date" id="mo-baixa-inicio" style="width:100%;border:1px solid #e0e3e8;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#f8f9fa;color:#111;transition:border .2s;" onfocus="this.style.borderColor='#1a6ef8';this.style.background='#fff'" onblur="this.style.borderColor='#e0e3e8';this.style.background='#f8f9fa'">
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#1a6ef8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">Data de Fim</label>
+          <input type="date" id="mo-baixa-fim" style="width:100%;border:1px solid #e0e3e8;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#f8f9fa;color:#111;transition:border .2s;" onfocus="this.style.borderColor='#1a6ef8';this.style.background='#fff'" onblur="this.style.borderColor='#e0e3e8';this.style.background='#f8f9fa'">
+        </div>
+      </div>
+    </div>
+    <div style="padding:14px 22px 20px;display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeBaixaMo()" style="padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;background:#f5f6f8;color:#555;border:1px solid #e0e3e8;transition:all .2s;" onmouseover="this.style.background='#e8eaed'" onmouseout="this.style.background='#f5f6f8'">Cancelar</button>
+      <button onclick="confirmBaixa()" style="padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;background:#1db954;color:#fff;border:none;transition:all .2s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#17a34a'" onmouseout="this.style.background='#1db954'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirmar Baixa
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
